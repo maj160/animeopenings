@@ -10,19 +10,6 @@ body {
   overflow: hidden;
 }
 
-body:fullscreen {
-  background-color: #111;
-}
-body:-moz-full-screen {
-  background-color: #111;
-}
-body:-ms-fullscreen {
-  background-color: #111;
-}
-body:-webkit-full-screen {
-  background-color: #111;
-}
-
 p  {
   margin: 0;
 }
@@ -125,7 +112,7 @@ video {
 
 #closemenubutton {
   color: black;
-  text-shadow: unset;
+  text-shadow: inherit;
 }
 
 #site-menu {
