@@ -16,6 +16,7 @@ var vNum = 0, video_obj = [];
 var autonext = false;
 var OPorED = "all"; // egg, op, ed, all
 var xDown = null, yDown = null;
+var mouseIdle;
 
 function filename() { return document.getElementsByTagName("source")[0].src.split("video/")[1].split(".")[0]; }
 function title() { return document.getElementById("title").textContent.trim(); }
@@ -107,6 +108,38 @@ function popHist() {
   ++vNum;
 }
 
+// Hide mouse, menu, progress bar, and controls if mouse has not moved for 3 seconds.
+document.onmousemove = function() {
+  document.querySelector("html").style.cursor = "";
+  
+  const progressbar = $("#progressbar");
+        progressbar.stop(true,true);
+        progressbar.show();
+  const menuButton = $("#menubutton");
+        menuButton.stop(true,true);
+        menuButton.show();
+  const menu = $("#site-menu");
+        menu.stop(true,true);
+        menu.show();
+  const controlsLeft = $(".controlsleft");
+        controlsLeft.stop(true,true);
+        controlsLeft.show();
+  const controlsRight = $(".controlsright");
+        controlsRight.stop(true,true);
+        controlsRight.show();
+  
+  clearTimeout(mouseIdle);
+  
+  mouseIdle = setTimeout(function() {
+    $("#progressbar").fadeOut(500);
+    $("#menubutton").fadeOut(500);
+    $("#site-menu").fadeOut(500);
+    $(".controlsleft").fadeOut(500);
+    $(".controlsright").fadeOut(500);
+    document.querySelector("html").style.cursor = "none";
+  }, 3000);
+};
+
 // get shuffled list of videos with current video first
 function getVideolist() {
   document.getElementById("bgvid").setAttribute("hidden", "");
@@ -156,11 +189,12 @@ function retrieveNewVideo() {
   if (document.title == "Secret~") history.pushState({video: "Egg", list: []}, document.title, location.origin + location.pathname);
   else history.pushState({video: vNum, list: video_obj}, document.title, location.origin + location.pathname);
 
-  ++vNum;
-
   resetSubtitles();
   document.getElementById("bgvid").play();
-  $("#pause-button").toggleClass("fa-play").toggleClass("fa-pause");
+  document.getElementById("pause-button").classList.remove("fa-play");
+  document.getElementById("pause-button").classList.add("fa-pause");
+
+  ++vNum;
 }
 
 function setVideoElements() {
@@ -201,7 +235,7 @@ function resetSubtitles() {
     $("#subtitles-keybinding").hide();
     if (subsOn()) {
       deleteCaptions(document.getElementById("bgvid"));
-      document.getElementById("bgvid").captions = "Not available";	//Must be defined to flag that subtitles are toggled on
+      document.getElementById("bgvid").captions = "Not available"; // Must be defined to flag that subtitles are toggled on
     }
   }
 }
@@ -607,7 +641,7 @@ function subsAvailable() {
   return Boolean((history.state.video[0] && history.state.video[0].subtitles) || (history.state.list[history.state.video] && history.state.list[history.state.video].subtitles));
 }
 function subsOn() {
-  return document.getElementById("bgvid").captions || false && true;
+  return Boolean(document.getElementById("bgvid").captions);
 }
 function toggleSubs() {
   if (subsAvailable()) {
