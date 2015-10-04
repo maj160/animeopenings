@@ -16,7 +16,7 @@ var vNum = 0, video_obj = [];
 var autonext = false;
 var OPorED = "all"; // egg, op, ed, all
 var xDown = null, yDown = null;
-var mouseIdle, lastMousePos = {"x":0,"y":0};
+var mouseIdle = null, lastMousePos = {"x":0,"y":0};
 
 function filename() { return document.getElementsByTagName("source")[0].src.split("video/")[1]; }
 function title() { return document.getElementById("title").textContent.trim(); }
@@ -81,6 +81,8 @@ window.onload = function() {
   document.addEventListener("webkitfullscreenchange", aniopFullscreenChange);
   document.addEventListener("mozfullscreenchange", aniopFullscreenChange);
   document.addEventListener("MSFullscreenChange", aniopFullscreenChange);
+
+  document.addEventListener("mousemove",aniopMouseMove);
 };
 
 window.onpopstate = popHist;
@@ -103,15 +105,13 @@ function popHist() {
 }
 
 // Hide mouse, menu, progress bar, and controls if mouse has not moved for 3 seconds.
-window.onmousemove = function(event) {
+aniopMouseMove = function(event) {
   const currMousePos = {"x":event.clientX,"y":event.clientY};
-  const dist = Math.sqrt(Math.pow(currMousePos.x - lastMousePos.x, 2) + Math.pow(currMousePos.y - lastMousePos.y, 2));
-  lastMousePos = currMousePos;
   
-  if ( dist > 0 )
+  if ( currMousePos["x"] != lastMousePos["x"] || currMousePos["y"] != lastMousePos["y"])
   {
     clearTimeout(mouseIdle);
-
+    mouseIdle = null;
     document.querySelector("html").style.cursor = "";
 
     $("#progressbar").show();
@@ -122,16 +122,20 @@ window.onmousemove = function(event) {
     $(".controlsright").show();
     document.getElementById("tooltip").style.display = null;
 
-    mouseIdle = setTimeout(function() {
-      $("#progressbar").fadeOut(500);
-      $("#menubutton").fadeOut(500);
-      $("#site-menu").fadeOut(500);
-      $(".controlsleft").fadeOut(500);
-      $(".controlsright").fadeOut(500);
-      $("#tooltip").fadeOut(500);
-      document.querySelector("html").style.cursor = "none";
-    }, 3000);
+    // Only hide the interface if the mouse is over the video
+    if(document.elementFromPoint(currMousePos["x"],currMousePos["y"]) == document.querySelector("#bgvid")) {
+      mouseIdle = setTimeout(function() {
+        $("#progressbar").fadeOut(500);
+        $("#menubutton").fadeOut(500);
+        $("#site-menu").fadeOut(500);
+        $(".controlsleft").fadeOut(500);
+        $(".controlsright").fadeOut(500);
+        $("#tooltip").fadeOut(500);
+        document.querySelector("html").style.cursor = "none";
+      }, 3000);
+    }
   }
+  lastMousePos = currMousePos;
 };
 
 // get shuffled list of videos with current video first
